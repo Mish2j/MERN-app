@@ -1,46 +1,14 @@
 const express = require("express");
-
 const router = express.Router();
 
-const PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous sky scrapers in the world!",
-    location: {
-      lat: 124.2345,
-      lng: -45.4534,
-    },
-    address: "20 W 34th St, New York, NY 10001",
-    creator: "u1",
-  },
-];
+const placesControllers = require("../controllers/places-cotroller");
 
-router.get("/:pid", (req, res, next) => {
-  const placeId = req.params.pid;
-  const place = PLACES.find((place) => place.id === placeId);
+router.get("/:pid", placesControllers.getPlaceById);
 
-  if (!place) {
-    const error = new Error("Could not find a place for the provided id.");
-    error.code = 404;
-    throw error;
-  }
+router.get("/user/:uid", placesControllers.getPlaceByUserId);
 
-  res.json({ place });
-});
+router.post("/", placesControllers.createPlace);
 
-router.get("/user/:uid", (req, res, next) => {
-  const userId = req.params.uid;
-
-  const place = PLACES.find((place) => place.creator === userId);
-
-  if (!place) {
-    const error = new Error("Could not find a place for the provided user id.");
-    error.code = 404;
-    return next(error);
-  }
-
-  res.json({ place });
-});
+router.patch("/:pid", placesControllers.updatePlaceById);
 
 module.exports = router;
