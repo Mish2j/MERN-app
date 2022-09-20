@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 
 const HttpError = require("../models/http-error");
 
-const PLACES = [
+let PLACES = [
   {
     id: "p1",
     title: "Empire State Building",
@@ -27,18 +27,18 @@ const getPlaceById = (req, res, next) => {
   res.json({ place });
 };
 
-const getPlaceByUserId = (req, res, next) => {
+const getPlacesByUserId = (req, res, next) => {
   const userId = req.params.uid;
 
-  const place = PLACES.find((place) => place.creator === userId);
+  const places = PLACES.ilter((place) => place.creator === userId);
 
-  if (!place) {
+  if (!places || places.length === 0) {
     return next(
-      new Error("Could not find a place for the provided user id.", 404)
+      new Error("Could not find places for the provided user id.", 404)
     );
   }
 
-  res.json({ place });
+  res.json({ places });
 };
 
 const createPlace = (req, res, next) => {
@@ -60,7 +60,7 @@ const createPlace = (req, res, next) => {
 
 const updatePlaceById = (req, res, next) => {
   const { title, description } = req.body;
-  console.log(req.body);
+
   const placeId = req.params.pid;
 
   const place = PLACES.find((place) => place.id === placeId);
@@ -73,7 +73,16 @@ const updatePlaceById = (req, res, next) => {
   res.status(200).json({ place: updatedPlace });
 };
 
+const deletePlace = (req, res, next) => {
+  const placeId = req.params.pid;
+
+  PLACES = PLACES.filter((p) => p.id !== placeId);
+
+  res.status(200).json({ message: "Deleted place", PLACES });
+};
+
 exports.getPlaceById = getPlaceById;
-exports.getPlaceByUserId = getPlaceByUserId;
+exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlaceById = updatePlaceById;
+exports.deletePlace = deletePlace;
