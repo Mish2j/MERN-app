@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const HttpError = require("./models/http-error");
 const placesRoutes = require("./routes/places-routes");
 const usersRoutes = require("./routes/users-routes");
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -28,4 +29,13 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unkown error occured" });
 }); // will execute if the above middlewares have an error
 
-app.listen(4000);
+mongoose
+  .connect(
+    "mongodb+srv://Mish:Mishel2jzgte@cluster0.jv2fj2e.mongodb.net/places?retryWrites=true&w=majority"
+  )
+  .then(() => {
+    app.listen(4000);
+  })
+  .catch((error) => {
+    console.log(error);
+  }); // connect mongoose to backend and server
