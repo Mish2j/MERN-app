@@ -111,12 +111,20 @@ const updatePlaceById = async (req, res, next) => {
   res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
-const deletePlace = (req, res, next) => {
+const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
+  let place;
+  try {
+    place = await Place.findById(placeId);
 
-  PLACES = PLACES.filter((p) => p.id !== placeId);
+    await place.remove();
+  } catch (error) {
+    return next(
+      new HttpError("Failed to delete, please try again later!", 500)
+    );
+  }
 
-  res.status(200).json({ message: "Deleted place", PLACES });
+  res.status(200).json({ message: "Deleted place" });
 };
 
 exports.getPlaceById = getPlaceById;
