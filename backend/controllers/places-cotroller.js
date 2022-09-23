@@ -84,26 +84,31 @@ const createPlace = async (req, res, next) => {
   try {
     await createdPlace.save();
   } catch (error) {
-    console.log(error);
     return next(new HttpError("Creating place failed, please try again", 500));
   }
 
   res.status(201).json({ place: createdPlace });
 };
 
-const updatePlaceById = (req, res, next) => {
+const updatePlaceById = async (req, res, next) => {
   const { title, description } = req.body;
 
   const placeId = req.params.pid;
 
-  const place = PLACES.find((place) => place.id === placeId);
-  const placeIndex = PLACES.findIndex((p) => p.id === placeId);
+  let place;
 
-  const updatedPlace = { ...place, title, description };
+  try {
+    place = await Place.findById(placeId);
 
-  PLACES[placeIndex] = updatedPlace;
+    place.title = title;
+    place.description = description;
 
-  res.status(200).json({ place: updatedPlace });
+    await place.save();
+  } catch (error) {
+    return next(new HttpError("Request failed, please try again", 500));
+  }
+
+  res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
 const deletePlace = (req, res, next) => {
