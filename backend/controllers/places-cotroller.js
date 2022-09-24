@@ -1,5 +1,4 @@
 const { default: mongoose } = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
 
 const HttpError = require("../models/http-error");
 const Place = require("../models/place");
@@ -30,24 +29,24 @@ const getPlaceById = async (req, res, next) => {
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
 
-  let places;
+  let userWithPlaces;
 
   try {
-    places = await Place.find({ creator: userId });
+    userWithPlaces = await Place.findById(userId).populate("places");
   } catch (error) {
     return next(
       new HttpError("Fetching places failed, please try again later!", 500)
     );
   }
 
-  if (!places || places.length === 0) {
+  if (!userWithPlaces || userWithPlaces.length === 0) {
     return next(
       new Error("Could not find places for the provided user id.", 404)
     );
   }
 
   res.json({
-    places: places.map((place) => place.toObject({ getters: true })),
+    places: userWithPlaces.map((place) => place.toObject({ getters: true })),
   });
 };
 
