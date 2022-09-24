@@ -58,7 +58,7 @@ const createUser = async (req, res, next) => {
     password,
     image:
       "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8dXNlcnxlbnwwfHwwfHw%3D&w=1000&q=80",
-    places,
+    places: [],
   });
 
   try {
@@ -74,8 +74,18 @@ const createUser = async (req, res, next) => {
   res.status(201).json({ user: newUser.toObject({ getters: true }) });
 };
 
-const getAllUsers = (req, res, next) => {
-  res.status(200).json(USERS);
+const getAllUsers = async (req, res, next) => {
+  let users;
+
+  try {
+    users = await User.find({}, "-password");
+  } catch (error) {
+    return next(
+      new HttpError("Something went wrong. Please try again later.", 500)
+    );
+  }
+
+  res.status(200).json(users.map((user) => user.toObject({ getters: true })));
 };
 
 module.exports = {

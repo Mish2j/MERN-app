@@ -1,7 +1,9 @@
+const { default: mongoose } = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
 const HttpError = require("../models/http-error");
 const Place = require("../models/place");
+const User = require("../models/user");
 
 let PLACES = [
   {
@@ -66,6 +68,9 @@ const getPlacesByUserId = async (req, res, next) => {
 const createPlace = async (req, res, next) => {
   const { title, description, coordinates, address, creator } = req.body;
 
+  // coordinates must be generated from any/or google MAP API based on the provided address
+  // In this function coordinates (location: lat, lng) are always the same for every created place
+
   // ADD VALIDATION
 
   const createdPlace = new Place({
@@ -80,6 +85,26 @@ const createPlace = async (req, res, next) => {
       "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/640px-Image_created_with_a_mobile_phone.png",
     creator,
   });
+
+  let user;
+
+  try {
+    const sess = await mongoose.startSession(); // current session - starts when we create new place
+    sess.startTransaction(); // we start a transaction in our current session
+    await createdPlace.save({ session: sess }); // saves data in DB and creates a unique place id automatically
+
+    // we have to add this place id to the current user to make the connection between user and place
+    user.places.push(createdPlace); // push - mongoose provided method which will take created place id and push it to the user places array
+
+    await user.save({ session: sess });
+    await sess.commitTransaction(); // the transaction will succeed only if this method executed successfully. If something goes wrong all changes will rolled back automatically
+  } catch (error) {
+    return next(new HttpError("Creating place failed, please try again", 500));
+  }
+
+  if (!user) {
+    return next(new HttpError("Couldn't find user!", 404));
+  }
 
   try {
     await createdPlace.save();
