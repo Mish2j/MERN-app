@@ -5,20 +5,6 @@ const HttpError = require("../models/http-error");
 const Place = require("../models/place");
 const User = require("../models/user");
 
-let PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous sky scrapers in the world!",
-    location: {
-      lat: 124.2345,
-      lng: -45.4534,
-    },
-    address: "20 W 34th St, New York, NY 10001",
-    creator: "u1",
-  },
-];
-
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
 
@@ -89,15 +75,7 @@ const createPlace = async (req, res, next) => {
   let user;
 
   try {
-    const sess = await mongoose.startSession(); // current session - starts when we create new place
-    sess.startTransaction(); // we start a transaction in our current session
-    await createdPlace.save({ session: sess }); // saves data in DB and creates a unique place id automatically
-
-    // we have to add this place id to the current user to make the connection between user and place
-    user.places.push(createdPlace); // push - mongoose provided method which will take created place id and push it to the user places array
-
-    await user.save({ session: sess });
-    await sess.commitTransaction(); // the transaction will succeed only if this method executed successfully. If something goes wrong all changes will rolled back automatically
+    user = await User.findById(creator);
   } catch (error) {
     return next(new HttpError("Creating place failed, please try again", 500));
   }
@@ -107,7 +85,15 @@ const createPlace = async (req, res, next) => {
   }
 
   try {
-    await createdPlace.save();
+    const sess = await mongoose.startSession(); // current session - starts when we create new place
+    sess.startTransaction(); // we start a transaction in our current session
+    await createdPlace.save({ session: sess }); // saves data in DB and creates a unique place id automatically
+
+    // we have to add this place id to the current user to make the connection between user and place
+    user.places.push(createdPlace); // push - mongoose provided method which will take created place id and push it to the user places array
+
+    await user.save({ session: sess });
+    await sess.commitTransaction(); // the transaction will succeed only if this method executes successfully. If something goes wrong all changes will rolled back automatically
   } catch (error) {
     return next(new HttpError("Creating place failed, please try again", 500));
   }
@@ -139,10 +125,26 @@ const updatePlaceById = async (req, res, next) => {
 const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
-  try {
-    place = await Place.findById(placeId);
 
-    await place.remove();
+  try {
+    place = await Place.findById(placeId).populate("creator");
+  } catch (error) {
+    return next(
+      new HttpError("Failed to delete, please try again later!", 500)
+    );
+  }
+
+  if (!place) {
+    return next(new HttpError("Couldn't find a place for this id!", 404));
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await place.remove({ session: sess });
+    place.creator.places.pull(place); // pull will automatically remove the place id from user.places array
+    await place.creator.save({ session: sess });
+    await sess.commitTransaction();
   } catch (error) {
     return next(
       new HttpError("Failed to delete, please try again later!", 500)

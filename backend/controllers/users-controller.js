@@ -1,15 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 const User = require("../models/user");
 
-const USERS = [
-  {
-    id: "u1",
-    name: "Max Schwarz",
-    email: "test@test.com",
-    password: "testers",
-  },
-];
-
 const HttpError = require("../models/http-error");
 
 const loginUser = async (req, res, next) => {
