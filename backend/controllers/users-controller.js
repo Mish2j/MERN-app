@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const User = require("../models/user");
 
 const USERS = [
   {
@@ -11,44 +12,66 @@ const USERS = [
 
 const HttpError = require("../models/http-error");
 
-const loginUser = (req, res, next) => {
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const loggingUser = USERS.find((user) => user.email === email);
+  // validate credentials
+  let existingUser;
 
-  if (!loggingUser || loggingUser.password !== password) {
-    throw new HttpError(
-      "Could not identify user, credentials seem to be wrong.",
-      401
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    return next(new HttpError("Failed to login. Please try again later!", 500));
+  }
+
+  if (!existingUser || existingUser.password !== password) {
+    return next(
+      new HttpError(
+        "Could not identify user, credentials seem to be wrong.",
+        401
+      )
     );
   }
 
-  res.json({ user: loggingUser });
+  res.json({ message: "Login Success" });
 };
 
-const createUser = (req, res, next) => {
-  const { email, password, name } = req.body;
+const createUser = async (req, res, next) => {
+  const { email, password, name, places } = req.body;
 
-  const existingUser = USERS.find((u) => u.email === email);
+  // validate credentials
+  let existingUser;
 
-  if (existingUser) {
-    throw new HttpError("This email already in use.", 422);
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    return next(new HttpError("Failed to signup.", 500));
   }
 
-  const newUser = {
-    id: uuidv4(),
+  if (existingUser) {
+    return next(new HttpError("This email address already in use", 422));
+  }
+
+  const newUser = new User({
     name,
     email,
     password,
-  };
+    image:
+      "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8dXNlcnxlbnwwfHwwfHw%3D&w=1000&q=80",
+    places,
+  });
 
-  // validate, throw error
-
-  USERS.push(newUser);
+  try {
+    await newUser.save();
+  } catch (error) {
+    return next(
+      new HttpError("Signing up failed, please try again later!", 500)
+    );
+  }
 
   // login user
 
-  res.status(201).json({ newUser });
+  res.status(201).json({ user: newUser.toObject({ getters: true }) });
 };
 
 const getAllUsers = (req, res, next) => {
