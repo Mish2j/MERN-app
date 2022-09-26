@@ -62,10 +62,27 @@ const Auth = () => {
     event.preventDefault();
 
     try {
+      setIsLoading(true);
       if (isLoginMode) {
-        // login
+        const resp = await fetch("http://localhost:4000/api/users/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: formState.inputs.email.value,
+            password: formState.inputs.password.value,
+          }),
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          throw new Error(resp.messsage);
+        }
+
+        console.log(data);
       } else {
-        setIsLoading(true);
         const resp = await fetch("http://localhost:4000/api/users/signup", {
           method: "POST",
           headers: {
