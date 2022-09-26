@@ -14,22 +14,24 @@ const Users = () => {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const resp = await fetch("http://localhost:4000/api/users/");
+        const response = await fetch("http://localhost:4000/api/users");
 
-        const respData = resp.json();
+        const respData = await response.json();
 
-        if (!respData.ok) {
+        if (!response.ok) {
           throw new Error(respData.message);
         }
 
+        console.log(response);
         console.log(respData);
 
         setData(respData);
+        setIsLoading(false);
       } catch (error) {
-        console.log(error.message);
+        setIsLoading(false);
+        console.log(error);
         setError(error.message);
       }
-      setIsLoading(false);
     };
 
     fetchUsers();
