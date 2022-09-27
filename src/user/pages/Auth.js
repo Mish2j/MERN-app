@@ -11,14 +11,14 @@ import {
   VALIDATOR_REQUIRE,
 } from "../../shared/util/validators";
 import { useForm } from "../../shared/hooks/form-hook";
+import { useHttpsClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 import "./Auth.css";
 
 const Auth = () => {
   const auth = useContext(AuthContext);
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { isLoading, error, sendRequest, clearError } = useHttpsClient();
 
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -61,63 +61,47 @@ const Auth = () => {
   const authSubmitHandler = async (event) => {
     event.preventDefault();
 
+    const authUrl = `http://localhost:4000/api/users/${
+      isLoginMode ? "login" : "signup"
+    }`;
+
+    const httpBody = {
+      email: formState.inputs.email.value,
+      password: formState.inputs.password.value,
+    };
+
+    if (!isLoginMode) {
+      httpBody.name = formState.inputs.name.value;
+    }
+
+    console.log(authUrl);
+    console.log(httpBody);
+
     try {
-      setIsLoading(true);
-      if (isLoginMode) {
-        const resp = await fetch("http://localhost:4000/api/users/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value,
-          }),
-        });
-
-        const data = await resp.json();
-
-        if (!resp.ok) {
-          throw new Error(resp.messsage);
+      const response = await sendRequest(
+        authUrl,
+        "POST",
+        JSON.stringify(httpBody),
+        {
+          "Content-Type": "application/json",
         }
+      );
 
-        console.log(data);
-      } else {
-        const resp = await fetch("http://localhost:4000/api/users/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formState.inputs.name.value,
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value,
-          }),
-        });
+      console.log(response);
 
-        const data = await resp.json();
-
-        if (!resp.ok) {
-          throw new Error(resp.messsage);
-        }
-
-        console.log(data);
+      if (!response.ok) {
+        throw new Error(response.messsage);
       }
 
-      setIsLoading(false);
       auth.login();
     } catch (error) {
       console.log(error);
-      setIsLoading(false);
-      setError(error.messsage);
     }
   };
 
-  const errorHandling = () => setError(null);
-
   return (
     <>
-      <ErrorModal error={error} onClear={errorHandling} />
+      <ErrorModal error={error} onClear={clearError} />
       <Card className="authentication">
         {isLoading && <LoadingSpinner asOverlay />}
         <h2>Login Required</h2>

@@ -27,7 +27,7 @@ const loginUser = async (req, res, next) => {
 };
 
 const createUser = async (req, res, next) => {
-  const { email, password, name, places } = req.body;
+  const { email, password, name } = req.body;
 
   // validate credentials
   let existingUser;
