@@ -1,16 +1,22 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from "react";
 
-import Card from '../../shared/components/UIElements/Card';
-import Button from '../../shared/components/FormElements/Button';
-import Modal from '../../shared/components/UIElements/Modal';
-import Map from '../../shared/components/UIElements/Map';
-import { AuthContext } from '../../shared/context/auth-context';
-import './PlaceItem.css';
+import Card from "../../shared/components/UIElements/Card";
+import Button from "../../shared/components/FormElements/Button";
+import Modal from "../../shared/components/UIElements/Modal";
+import Map from "../../shared/components/UIElements/Map";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 
-const PlaceItem = props => {
+import { AuthContext } from "../../shared/context/auth-context";
+import { useHttpsClient } from "../../shared/hooks/http-hook";
+
+import "./PlaceItem.css";
+
+const PlaceItem = (props) => {
   const auth = useContext(AuthContext);
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const { isLoading, error, sendRequest, clearError } = useHttpsClient();
 
   const openMapHandler = () => setShowMap(true);
 
@@ -24,13 +30,23 @@ const PlaceItem = props => {
     setShowConfirmModal(false);
   };
 
-  const confirmDeleteHandler = () => {
+  const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
-    console.log('DELETING...');
+
+    try {
+      const response = await sendRequest(
+        "http://localhost:4000/api/places/" + props.id,
+        "DELETE"
+      );
+
+      console.log(response);
+    } catch (error) {}
   };
 
   return (
     <React.Fragment>
+      <ErrorModal onClear={clearError} error={error} />
+      {isLoading && <LoadingSpinner asOverlay />}
       <Modal
         show={showMap}
         onCancel={closeMapHandler}
