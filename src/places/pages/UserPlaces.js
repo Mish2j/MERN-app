@@ -1,7 +1,6 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import { AuthContext } from "../../shared/context/auth-context";
 import { useHttpsClient } from "../../shared/hooks/http-hook";
 
 import PlaceList from "../components/PlaceList";
@@ -19,8 +18,6 @@ const UserPlaces = () => {
         const placesData = await sendRequest(
           `http://localhost:4000/api/places/user/${userId}`
         );
-
-        console.log(placesData.places);
 
         setLoadedPlaces(placesData.places);
       } catch (error) {}
