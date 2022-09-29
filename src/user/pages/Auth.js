@@ -75,7 +75,7 @@ const Auth = () => {
     }
 
     try {
-      const response = await sendRequest(
+      const responseData = await sendRequest(
         authUrl,
         "POST",
         JSON.stringify(httpBody),
@@ -88,7 +88,7 @@ const Auth = () => {
       //   throw new Error(response.messsage);
       // }
 
-      auth.login();
+      auth.login(responseData.user.id);
     } catch (err) {}
   };
 

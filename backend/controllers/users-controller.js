@@ -23,7 +23,7 @@ const loginUser = async (req, res, next) => {
     );
   }
 
-  res.json({ message: "Login Success" });
+  res.status(201).json({ user: existingUser.toObject({ getters: true }) });
 };
 
 const createUser = async (req, res, next) => {
