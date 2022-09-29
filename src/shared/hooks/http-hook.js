@@ -17,11 +17,11 @@ export const useHttpsClient = () => {
       try {
         const response = await fetch(url, { method, body, headers });
 
-        if (!response.ok) {
-          throw new Error(response.message);
-        }
+        const responseData = await response.json();
 
-        const responseData = response.json();
+        if (!response.ok) {
+          throw new Error(responseData.message);
+        }
 
         activeHttpRequests.current = activeHttpRequests.current.filter(
           (reqCtrl) => reqCtrl !== httpAbortController
@@ -29,10 +29,10 @@ export const useHttpsClient = () => {
 
         setIsLoading(false);
         return responseData;
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        setError(err.message);
         setIsLoading(false);
-        throw error;
+        throw err;
       }
     },
     []

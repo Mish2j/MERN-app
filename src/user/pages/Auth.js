@@ -74,9 +74,6 @@ const Auth = () => {
       httpBody.name = formState.inputs.name.value;
     }
 
-    console.log(authUrl);
-    console.log(httpBody);
-
     try {
       const response = await sendRequest(
         authUrl,
@@ -87,16 +84,12 @@ const Auth = () => {
         }
       );
 
-      console.log(response);
-
-      if (!response.ok) {
-        throw new Error(response.messsage);
-      }
+      // if (!response.ok) {
+      //   throw new Error(response.messsage);
+      // }
 
       auth.login();
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) {}
   };
 
   return (

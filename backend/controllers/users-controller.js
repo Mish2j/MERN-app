@@ -75,7 +75,7 @@ const getAllUsers = async (req, res, next) => {
     );
   }
 
-  res.status(200).json(users.map((user) => user.toObject({ getters: true })));
+  res.json(users.map((user) => user.toObject({ getters: true })));
 };
 
 module.exports = {
