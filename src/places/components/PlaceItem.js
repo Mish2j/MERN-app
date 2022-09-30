@@ -39,7 +39,7 @@ const PlaceItem = (props) => {
         "DELETE"
       );
 
-      console.log(response);
+      props.onDelete(props.id);
     } catch (error) {}
   };
 
