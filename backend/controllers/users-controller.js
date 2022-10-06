@@ -1,5 +1,5 @@
 const User = require("../models/user");
-
+const bcrypt = require("bcryptjs");
 const HttpError = require("../models/http-error");
 
 const loginUser = async (req, res, next) => {
@@ -14,7 +14,26 @@ const loginUser = async (req, res, next) => {
     return next(new HttpError("Failed to login. Please try again later!", 500));
   }
 
-  if (!existingUser || existingUser.password !== password) {
+  if (!existingUser) {
+    return next(
+      new HttpError(
+        "Could not identify user, credentials seem to be wrong.",
+        401
+      )
+    );
+  }
+
+  let isValidPassword = false;
+
+  try {
+    isValidPassword = await bcrypt.compare(password, existingUser.password);
+  } catch (error) {
+    return next(
+      new HttpError("Could not log you in, please check your credentials!", 500)
+    );
+  }
+
+  if (!isValidPassword) {
     return next(
       new HttpError(
         "Could not identify user, credentials seem to be wrong.",
@@ -42,10 +61,20 @@ const createUser = async (req, res, next) => {
     return next(new HttpError("This email address already in use", 422));
   }
 
+  let hashedPassword;
+
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    return next(
+      new HttpError("Could not create user, please try again later!", 500)
+    );
+  }
+
   const newUser = new User({
     name,
     email,
-    password,
+    password: hashedPassword,
     image: req.file.path,
     places: [],
   });
