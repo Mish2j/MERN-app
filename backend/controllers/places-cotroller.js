@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 
+const fs = require("fs");
 const HttpError = require("../models/http-error");
 const Place = require("../models/place");
 const User = require("../models/user");
@@ -137,6 +138,8 @@ const deletePlace = async (req, res, next) => {
     return next(new HttpError("Couldn't find a place for this id!", 404));
   }
 
+  const imagePath = place.image;
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -149,6 +152,10 @@ const deletePlace = async (req, res, next) => {
       new HttpError("Failed to delete, please try again later!", 500)
     );
   }
+
+  fs.unlink(imagePath, (err) => {
+    console.log(err);
+  });
 
   res.status(200).json({ message: "Deleted place" });
 };
