@@ -2,11 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 const placesControllers = require("../controllers/places-cotroller");
-const fileUpload = require("../middlware/file-upload");
+const fileUpload = require("../middleware/file-upload");
+const auth = require("../middleware/auth");
 
 router.get("/:pid", placesControllers.getPlaceById);
 
 router.get("/user/:uid", placesControllers.getPlacesByUserId);
+
+router.use(auth); // A middleware that checks if the user is authenticated (if the user is not authenticated, middlewares below will not be executed)
 
 router.post("/", fileUpload.single("image"), placesControllers.createPlace);
 

@@ -79,8 +79,7 @@ const Auth = () => {
       formData.append("name", formState.inputs.name.value);
       formData.append("image", formState.inputs.image.value);
     }
-    console.log(formData);
-    console.log(formState);
+
     try {
       const responseData = await sendRequest(authUrl, "POST", formData);
 

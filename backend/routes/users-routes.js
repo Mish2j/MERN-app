@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const fileUpload = require("../middlware/file-upload");
+const fileUpload = require("../middleware/file-upload");
 
 const {
   createUser,
