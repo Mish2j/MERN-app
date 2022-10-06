@@ -59,7 +59,6 @@ const createPlace = async (req, res, next) => {
   // In this function coordinates (location: lat, lng) are always the same for every created place
 
   // ADD VALIDATION
-
   const createdPlace = new Place({
     title,
     description,
@@ -68,8 +67,7 @@ const createPlace = async (req, res, next) => {
       lat: 124.2345,
       lng: -45.4534,
     },
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/640px-Image_created_with_a_mobile_phone.png",
+    image: req.file.path,
     creator,
   });
 

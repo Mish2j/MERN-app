@@ -67,34 +67,22 @@ const Auth = () => {
   const authSubmitHandler = async (event) => {
     event.preventDefault();
 
-    console.log(formState);
-
     const authUrl = `http://localhost:4000/api/users/${
       isLoginMode ? "login" : "signup"
     }`;
 
-    const httpBody = {
-      email: formState.inputs.email.value,
-      password: formState.inputs.password.value,
-    };
+    const formData = new FormData();
+    formData.append("email", formState.inputs.email.value);
+    formData.append("password", formState.inputs.password.value);
 
     if (!isLoginMode) {
-      httpBody.name = formState.inputs.name.value;
+      formData.append("name", formState.inputs.name.value);
+      formData.append("image", formState.inputs.image.value);
     }
-
+    console.log(formData);
+    console.log(formState);
     try {
-      const responseData = await sendRequest(
-        authUrl,
-        "POST",
-        JSON.stringify(httpBody),
-        {
-          "Content-Type": "application/json",
-        }
-      );
-
-      // if (!response.ok) {
-      //   throw new Error(response.messsage);
-      // }
+      const responseData = await sendRequest(authUrl, "POST", formData);
 
       auth.login(responseData.user.id);
     } catch (err) {}
@@ -120,7 +108,12 @@ const Auth = () => {
             />
           )}
           {!isLoginMode && (
-            <ImageUpload center id="image" onInput={inputHandler} />
+            <ImageUpload
+              center
+              id="image"
+              onInput={inputHandler}
+              errorText="Please provide an image."
+            />
           )}
           <Input
             element="input"
