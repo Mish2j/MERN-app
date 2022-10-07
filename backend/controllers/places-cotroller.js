@@ -118,7 +118,7 @@ const updatePlaceById = async (req, res, next) => {
   // Checks if the current user is the creator of this place (data)
   // Other users can't update the place data
   if (place.creator.toString() !== req.userData.userId) {
-    return next(new HttpError("You are not allowed to edit this place", 401));
+    return next(new HttpError("You are not allowed to edit this place", 403));
   }
 
   place.title = title;
@@ -147,6 +147,12 @@ const deletePlace = async (req, res, next) => {
 
   if (!place) {
     return next(new HttpError("Couldn't find a place for this id!", 404));
+  }
+
+  if (place.creator.id !== req.userData.userId) {
+    return next(
+      new HttpError("You are not allowed to delete this place.", 403)
+    );
   }
 
   const imagePath = place.image;
