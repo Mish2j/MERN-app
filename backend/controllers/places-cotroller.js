@@ -110,13 +110,24 @@ const updatePlaceById = async (req, res, next) => {
 
   try {
     place = await Place.findById(placeId);
-
-    place.title = title;
-    place.description = description;
-
-    await place.save();
   } catch (error) {
     return next(new HttpError("Request failed, please try again", 500));
+  }
+
+  // Additional check on the backend for security reasons.
+  // Checks if the current user is the creator of this place (data)
+  // Other users can't update the place data
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to edit this place", 401));
+  }
+
+  place.title = title;
+  place.description = description;
+
+  try {
+    await place.save();
+  } catch (error) {
+    return next(new HttpError("Failed to update data, please try again", 500));
   }
 
   res.status(200).json({ place: place.toObject({ getters: true }) });
