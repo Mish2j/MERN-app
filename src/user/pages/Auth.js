@@ -67,24 +67,37 @@ const Auth = () => {
   const authSubmitHandler = async (event) => {
     event.preventDefault();
 
-    const authUrl = `http://localhost:4000/api/users/${
-      isLoginMode ? "login" : "signup"
-    }`;
+    if (isLoginMode) {
+      try {
+        const responseData = await sendRequest(
+          "http://localhost:4000/api/users/login",
+          "POST",
+          JSON.stringify({
+            email: formState.inputs.email.value,
+            password: formState.inputs.password.value,
+          }),
+          {
+            "Content-Type": "application/json",
+          }
+        );
+        auth.login(responseData.userId, responseData.token);
+      } catch (err) {}
+    } else {
+      try {
+        const formData = new FormData();
+        formData.append("email", formState.inputs.email.value);
+        formData.append("name", formState.inputs.name.value);
+        formData.append("password", formState.inputs.password.value);
+        formData.append("image", formState.inputs.image.value);
+        const responseData = await sendRequest(
+          "http://localhost:4000/api/users/signup",
+          "POST",
+          formData
+        );
 
-    const formData = new FormData();
-    formData.append("email", formState.inputs.email.value);
-    formData.append("password", formState.inputs.password.value);
-
-    if (!isLoginMode) {
-      formData.append("name", formState.inputs.name.value);
-      formData.append("image", formState.inputs.image.value);
+        auth.login(responseData.userId, responseData.token);
+      } catch (err) {}
     }
-
-    try {
-      const responseData = await sendRequest(authUrl, "POST", formData);
-
-      auth.login(responseData.user.id);
-    } catch (err) {}
   };
 
   return (

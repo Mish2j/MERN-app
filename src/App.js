@@ -10,23 +10,24 @@ import MainNavigation from "./shared/components/Navigation/MainNavigation";
 import { AuthContext } from "./shared/context/auth-context";
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState(false);
   const [userId, setUserId] = useState(null);
 
-  const login = useCallback((uid) => {
-    setIsLoggedIn(true);
+  const login = useCallback((uid, token) => {
+    setToken(token);
     setUserId(uid);
   }, []);
 
   const logout = useCallback(() => {
-    setIsLoggedIn(false);
+    setToken(null);
     setUserId(null);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn: isLoggedIn,
+        isLoggedIn: !!token,
+        token: token,
         userId: userId,
         login: login,
         logout: logout,
@@ -38,13 +39,13 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Users />} />
             <Route path="/:userId/places" element={<UserPlaces />} />
-            {isLoggedIn && (
+            {token && (
               <Route path="places">
                 <Route path="new" element={<NewPlace />} />
                 <Route path=":placeId" element={<UpdatePlace />} />
               </Route>
             )}
-            {!isLoggedIn && <Route path="/auth" element={<Auth />} />}
+            {!token && <Route path="/auth" element={<Auth />} />}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
