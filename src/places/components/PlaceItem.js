@@ -35,7 +35,7 @@ const PlaceItem = (props) => {
 
     try {
       const response = await sendRequest(
-        "http://localhost:4000/api/places/" + props.id,
+        process.env.REACT_APP_BACKEND_URL + "/places/" + props.id,
         "DELETE",
         null,
         { Authorization: "Bearer " + auth.token }
@@ -86,7 +86,7 @@ const PlaceItem = (props) => {
         <Card className="place-item__content">
           <div className="place-item__image">
             <img
-              src={`http://localhost:4000/${props.image}`}
+              src={`${process.env.REACT_APP_ASSET_URL}/${props.image}`}
               alt={props.title}
             />
           </div>
